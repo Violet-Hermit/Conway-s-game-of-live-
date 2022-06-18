@@ -69,8 +69,7 @@ class Field:
             new_mtx[x][y] = False
 
     def clearing_screen(self):
-        canvas.create_rectangle(0, 0, (self.heigth + 1) * self.size_of_cell, (self.weigth + 1) * self.size_of_cell
-                                , fill="white")
+        canvas.delete("all")
 
     def field_updating(self):
         new_mtx = self.mtx.copy()
