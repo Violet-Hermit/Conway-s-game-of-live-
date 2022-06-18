@@ -24,7 +24,7 @@ from tkinter import *
 # 3 All other live cells die in the next generation. Similarly, all other dead cells stay dead.
 # The initial pattern constitutes the seed of the system. The first generation is created by applying the
 # above rules simultaneously to every cell in the seed, live or dead; births and deaths occur simultaneously,
-# and the discrete moment at which this happens is sometimes called a tick. Each generation is a pure function of the
+# and the discrete moment. at which this happens is sometimes called a tick. Each generation is a pure function of the
 # preceding one. The rules continue to be applied repeatedly to create further generations.
 
 class Field:
@@ -32,58 +32,54 @@ class Field:
     def __init__(self, heigth: int, weigth: int, size_of_cell: int):
         self.heigth = heigth
         self.weigth = weigth
-        self.mtx = [[Cell(i, j, randint(0, 1)) for i in range(weigth)] for j in
-                    range(heigth)]  # Creation of a matrix of cells
         self.size_of_cell = size_of_cell
+        self.mtx = [[randint(0,1) for i in range(weigth)] for j in
+                    range(heigth)]  # Creation of a matrix of cells
 
     def drawing_field(self):
         for i in range(len(self.mtx)):
             for j in range(len(self.mtx[i])):
                 canvas.create_rectangle(i * self.size_of_cell, j * self.size_of_cell, (i + 1) * self.size_of_cell,
                                         (j + 1) * self.size_of_cell,
-                                        fill="black") if 1 == self.mtx[i][j].live else None
+                                        fill="black") if 1 == self.mtx[i][j] else None
 
-    def counting_of_neigbors(self, cell):
+    def counting_of_neigbors(self, x, y):
+
         sum: int = 0
-        left = cell.p_x - 1 if cell.p_x > 0 else cell.p_x
-        right = cell.p_x + 2 if cell.p_x < len(self.mtx[cell.p_y]) - 1 else cell.p_x + 1
-        top = cell.p_y - 1 if cell.p_y > 0 else cell.p_y
-        bottom = cell.p_y + 2 if cell.p_y < len(self.mtx) - 1 else cell.p_y + 1
+        left = x - 1 if x > 0 else x
+        right = x + 2 if x < len(self.mtx[y]) - 1 else x + 1
+        top = y - 1 if y > 0 else y
+        bottom = y + 2 if y < len(self.mtx) - 1 else y + 1
 
         for i in range(left, right):
             for j in range(top, bottom):
-                sum += self.mtx[i][j].live
-        return sum - self.mtx[cell.p_x][cell.p_y].live
+                sum += self.mtx[i][j]
+        return sum - self.mtx[x][y]
 
-    def cell_updating(self, cell, new_mtx):
-        if cell.live == 0 and self.counting_of_neigbors(cell) == 3:
-            new_mtx[cell.p_x][cell.p_y].live = True
+    def cell_updating(self, x, y, new_mtx):
 
-        if cell.live == 1 and self.counting_of_neigbors(cell) == 2 or self.counting_of_neigbors(cell) == 3:
-            new_mtx[cell.p_x][cell.p_y].live = True
+        live = self.mtx[x][y]
+        if live == 0 and self.counting_of_neigbors(x, y) == 3:
+            new_mtx[x][y] = True
 
-        if self.counting_of_neigbors(cell) > 3 or self.counting_of_neigbors(cell) < 2:
-            new_mtx[cell.p_x][cell.p_y].live = False
+        if live == 1 and self.counting_of_neigbors(x, y) == 2 or self.counting_of_neigbors(x, y) == 3:
+            new_mtx[x][y] = True
+
+        if self.counting_of_neigbors(x, y) > 3 or self.counting_of_neigbors(x, y) < 2:
+            new_mtx[x][y] = False
 
     def clearing_screen(self):
         canvas.create_rectangle(0, 0, (self.heigth + 1) * self.size_of_cell, (self.weigth + 1) * self.size_of_cell
                                 , fill="white")
 
-    #
-
     def field_updating(self):
         new_mtx = self.mtx.copy()
         for i in range(len(self.mtx)):
             for j in range(len(self.mtx[i])):
-                self.cell_updating(self.mtx[i][j], new_mtx)
+                live = self.mtx[i][j]
+                self.cell_updating(i, j, new_mtx)
             mtx = new_mtx
 
-
-class Cell:
-    def __init__(self, p_x, p_y, live: bool):
-        self.p_y = p_y
-        self.p_x = p_x
-        self.live = live
 
 
 # Main cycle
@@ -93,9 +89,10 @@ if __name__ == '__main__':
     canvas = Canvas(wnd, width=size, height=size)
     canvas.pack()
     colors = "black"
-    field = Field(20, 20, 30)  # creating field
+    field = Field(30, 30, 20)  # creating field
+    field.drawing_field()
     while True:
         field.field_updating()
         field.clearing_screen()
         field.drawing_field()
-        wnd.update()
+        wnd.update()  # update
